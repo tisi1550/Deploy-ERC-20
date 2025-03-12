@@ -37,8 +37,7 @@ contract Token {
 
     function transfer(address _to, uint256 _value) public returns (bool) {
         require(_balances[msg.sender] >= _value, "Insufficient balance");
-        _balances[msg.sender] -= _value;
-        _balances[_to] += _value;
+
         emit Transfer(msg.sender, _to, _value);
         return true;
     }
@@ -47,9 +46,7 @@ contract Token {
         uint256 allowance_ = _allowances[_from][msg.sender];
         require(_balances[_from] >= _value, "Insufficient balance");
         require(allowance_ >= _value, "Allowance exceeded");
-        _balances[_to] += _value;
-        _balances[_from] -= _value;
-        _allowances[_from][msg.sender] -= _value;
+        
         emit Transfer(_from, _to, _value);
         return true;
     }

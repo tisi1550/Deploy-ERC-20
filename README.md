@@ -64,3 +64,10 @@ $ forge --help
 $ anvil --help
 $ cast --help
 ```
+
+
+```
+Deployer: 0xA5b08f7Ec624734CC370b0a45995FF8d75D0cA4c
+Deployed to: 0xeb0215bb664526915A210ed552B152e68a051c57
+Transaction hash: 0x7e61d09cea7982eca33f7bce04f183489df2314ac4fe2160453fb48175ee149b
+```

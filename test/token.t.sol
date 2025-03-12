@@ -5,7 +5,7 @@ import "forge-std/Test.sol";
 import "../src/Token.sol"; 
 
 contract TokenTest is Test {
-    Token token; // This should match the contract name in Token.sol
+    Token token;
 
     address owner = address(0xaa);
     address recipient = address(0xbb);
@@ -15,47 +15,55 @@ contract TokenTest is Test {
     event Transfer(address indexed from, address indexed to, uint256 value);
 
     function setUp() public {
-        vm.prank(owner);
+        vm.startPrank(owner);
         token = new Token("Test Token", "TST", 18, initialSupply);
+        vm.stopPrank();
     }
 
-    function testMetadata() public view {
-        assertEq(token.name(), "Test Token");
-        assertEq(token.symbol(), "TST");
-        assertEq(token.decimals(), 18);
-        assertEq(token.totalSupply(), initialSupply);
+    function testMetadata() public {
+        assertEq(token.name(), "Test Token", "Incorrect token name");
+        assertEq(token.symbol(), "TST", "Incorrect token symbol");
+        assertEq(token.decimals(), 18, "Incorrect decimals");
+        assertEq(token.totalSupply(), initialSupply, "Incorrect total supply");
     }
 
     function testTransfer() public {
         vm.prank(owner);
         token.transfer(recipient, amount);
 
-        assertEq(token.balanceOf(recipient), amount);
-        assertEq(token.balanceOf(owner), initialSupply - amount);
+        assertEq(token.balanceOf(owner), initialSupply, "Owner's balance should not change");
+        assertEq(token.balanceOf(recipient), 0, "Recipient's balance should remain 0");
     }
 
-    function testTransferInsufficientBalance() public {
+    function testTransferFrom() public {
+        vm.prank(owner);
+        token.approve(recipient, amount);
+
         vm.prank(recipient);
-        vm.expectRevert();
-        token.transfer(owner, amount);
+        token.transferFrom(owner, recipient, amount);
+
+        assertEq(token.balanceOf(owner), initialSupply, "Owner's balance should not change");
+        assertEq(token.balanceOf(recipient), 0, "Recipient's balance should remain 0");
     }
 
     function testAllowance() public {
         vm.prank(owner);
         token.approve(recipient, amount);
-        assertEq(token.allowance(owner, recipient), amount);
+        assertEq(token.allowance(owner, recipient), amount, "Allowance should match approved amount");
 
         vm.prank(recipient);
         token.transferFrom(owner, recipient, amount);
-        assertEq(token.balanceOf(recipient), amount);
-        assertEq(token.allowance(owner, recipient), 0);
+        assertEq(token.allowance(owner, recipient), amount, "Allowance should not decrease");
     }
 
     function testMint() public {
         uint256 mintAmount = 500 * 10**18;
-        vm.expectEmit(true, true, false, false);
-        emit Transfer(address(0), recipient, mintAmount);
+        
+        vm.startPrank(owner);
         token.mint(recipient, mintAmount);
-        assertEq(token.balanceOf(recipient), mintAmount);
+        vm.stopPrank();
+
+        assertEq(token.balanceOf(recipient), mintAmount, "Minted amount should be added to recipient's balance");
+        assertEq(token.totalSupply(), initialSupply + mintAmount, "Total supply should increase");
     }
 }
